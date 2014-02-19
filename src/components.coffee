@@ -5,10 +5,12 @@ Crafty.c 'CenterText',{
 }
 
 Crafty.c 'Cell', {
-    aliveColor: '#666',
-    deadColor:  '#123',
-    currAlive:  false,
-    lastAlive:  false,
+    aliveColor: 'purple'
+    deadColor:  'pink'
+    currAlive:  false
+    lastAlive:  false
+    cellX:      0
+    cellY:      0
     
     init: ->
         this.requires('2D, Canvas, Color')
@@ -20,8 +22,7 @@ Crafty.c 'Cell', {
     
     cell: (state)->
         this.currAlive = !!state
-        this.lastAlive = !!state
-        this.color this.cellColor()
+        this.reRender()
         this
         
     cellColor: ->
@@ -31,8 +32,29 @@ Crafty.c 'Cell', {
             this.deadColor
         
     at: (x,y)->
+        this.cellX = x
+        this.cellY = y
+        
         this.attr {
             x: x * Game.cellSize,
             y: y * Game.cellSize
         }
+        
+    calcNextState: ->
+        neighbors = Game.neighborsOf(this.cellX,this.cellY)
+        alive     = 0
+        for neighbor in neighbors
+            alive += 1 if neighbor.lastAlive
+            
+        if this.currAlive
+            if alive == 2 || alive == 3
+                this.currAlive = true
+            else
+                this.currAlive = false
+        else if alive == 3
+            this.currAlive = true
+        
+    reRender: ->
+        this.lastAlive = this.currAlive
+        this.color this.cellColor()
 }
